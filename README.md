@@ -1,3 +1,14 @@
+## Experimental LaserGBRL
+This is a highly experimental version of LaserGRBL with features for personal use.
+
+This repository is for inspirational purposes only. 
+
+**Do not use this version for any purpose, please use the official LaserGRBL**
+
+The link to the official LaserGRBL can be found below.
+
+-------------------------------------------------------------------
+
 # LaserGRBL [![Donation](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/pools/c/8cQ1Lo4sRA)
 Official website [http://lasergrbl.com](http://lasergrbl.com)
 
