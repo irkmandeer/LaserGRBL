@@ -7,6 +7,10 @@ This repository is for inspirational purposes only.
 
 The link to the official LaserGRBL can be found below.
 
+### History
+- 2020-05-03: [Added Engraving Progress to the Job Preview](https://github.com/urkmandeer/LaserGRBL/commit/2aafa3b8a2ea16e7a7994065f4d54c4431928ad0)
+
+
 -------------------------------------------------------------------
 
 # LaserGRBL [![Donation](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/pools/c/8cQ1Lo4sRA)
