@@ -22,7 +22,8 @@ namespace LaserGRBL.UserControls
 		private GPoint mLastMPos;
 		private float mCurF;
 		private float mCurS;
-		private bool mFSTrig;
+		private bool mFSTrig;        
+        private int lastProcessedCommandNumber = -1; //Last Processed Command Number Drawn
 
 		public GrblPanel()
 		{
@@ -141,16 +142,23 @@ namespace LaserGRBL.UserControls
 
 		void OnFileLoaded(long elapsed, string filename)
 		{
-			RecreateBMP();
-		}
+			RecreateBMP(true);
+        }
 
-		public void RecreateBMP()
+        public void RecreateBMP(bool forceFullRedraw)
 		{
-			AbortCreation();
+            //Only redraw if forced or the thread is idle 
+            if (forceFullRedraw || TH == null || !TH.IsAlive) 
+            {
+                AbortCreation();
 
-			TH = new System.Threading.Thread(DoTheWork);
-			TH.Name = "GrblPanel Drawing Thread";
-			TH.Start();
+                if (forceFullRedraw)
+                    lastProcessedCommandNumber = -1; //Force a full redraw
+
+                TH = new System.Threading.Thread(DoTheWork);
+                TH.Name = "GrblPanel Drawing Thread";
+                TH.Start();                
+            }
 		}
 
 		private void AbortCreation()
@@ -165,7 +173,7 @@ namespace LaserGRBL.UserControls
 		protected override void OnSizeChanged(EventArgs e)
 		{
 			base.OnSizeChanged(e);
-			RecreateBMP();
+			RecreateBMP(true);
 		}
 
 		private void DoTheWork()
@@ -177,21 +185,54 @@ namespace LaserGRBL.UserControls
 				if (wSize.Width < 1 || wSize.Height < 1)
 					return;
 
-				System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(wSize.Width, wSize.Height);
-				using (System.Drawing.Graphics g = Graphics.FromImage(bmp))
-				{
-					g.SmoothingMode = SmoothingMode.AntiAlias;
-					g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-					g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-					g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+                // Get the last Queued and Processed Command Numbers
+                int queuedCommandNumber = Core.LastQueuedGrblCommandNumber; //Not Thread Safe
+                int processedCommandNumber = Core.LastProcessedGrblCommandNumber; //Not Thread Safe
+                int lastCommandNumber = lastProcessedCommandNumber; //Not Thread Safe
 
-					if (Core != null /*&& Core.HasProgram*/)
-						Core.LoadedFile.DrawOnGraphics(g, wSize);
+                // Handle Pause and Resume
+                if (lastCommandNumber > queuedCommandNumber) {
 
-					mLastMatrix = g.Transform;
-				}
+                    lastCommandNumber = -1;  
+                }
 
-				AssignBMP(bmp);
+                //Create or Copy Bitmap 
+                System.Drawing.Bitmap bmp;
+                if (mBitmap == null || lastCommandNumber == -1) { //Not Thread Safe
+
+                    bmp = new System.Drawing.Bitmap(wSize.Width, wSize.Height);
+                    lastCommandNumber = -1;
+                } else {
+
+                    bmp = new System.Drawing.Bitmap(mBitmap); //Not Thread Safe
+                }
+
+                //Draw Preview and Progress
+                using (System.Drawing.Graphics g = Graphics.FromImage(bmp)) {
+
+                    g.SmoothingMode = SmoothingMode.AntiAlias;
+                    g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                    g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+
+                    if (Core != null /*&& Core.HasProgram*/) {
+
+                        //Full redraw
+                        if (lastCommandNumber == -1) {
+
+                            Core.LoadedFile.DrawOnGraphics(g, wSize);
+                        }
+
+                        //Draw Progress
+                        Core.LoadedFile.DrawProgressOnGraphics(g, wSize, lastCommandNumber, queuedCommandNumber, processedCommandNumber);
+                    }
+                    mLastMatrix = g.Transform;
+                }
+
+                // Set last processed command number
+                lastProcessedCommandNumber = processedCommandNumber; //Not Thread Safe
+             
+                AssignBMP(bmp);
 			}
 			catch (System.Threading.ThreadAbortException)
 			{
@@ -230,7 +271,11 @@ namespace LaserGRBL.UserControls
 		{
 			if (Core != null && (mLastWPos != Core.WorkPosition || mLastMPos != Core.MachinePosition || mCurF != Core.CurrentF || mCurS != Core.CurrentS))
 			{
-				mLastWPos = Core.WorkPosition;
+                
+
+                RecreateBMP(false); //Draw Engraving Progress
+
+                mLastWPos = Core.WorkPosition;
 				mLastMPos = Core.MachinePosition;
 				mCurF = Core.CurrentF;
 				mCurS = Core.CurrentS;
@@ -241,7 +286,7 @@ namespace LaserGRBL.UserControls
 
 		internal void OnColorChange()
 		{
-			RecreateBMP();
+			RecreateBMP(true);
 		}
 	}
 }

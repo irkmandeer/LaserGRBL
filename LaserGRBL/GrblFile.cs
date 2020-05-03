@@ -759,9 +759,78 @@ namespace LaserGRBL
 				else
 					return CartesianQuadrant.Mix;
 			}
-		}
+        }
+        
+        internal void DrawProgressOnGraphics(Graphics g, Size size, int lastCommandNumber, int queuedCommandNumber, int processedCommandNumber) {
 
-		internal void DrawOnGraphics(Graphics g, Size size)
+            if (!mRange.MovingRange.ValidRange)
+                return;
+
+            GrblCommand.StatePositionBuilder spb = new GrblCommand.StatePositionBuilder();
+            ProgramRange.XYRange scaleRange = mRange.MovingRange;
+
+            //Get scale factors for both directions. To preserve the aspect ratio, use the smaller scale factor.
+            float zoom = scaleRange.Width > 0 && scaleRange.Height > 0 ? Math.Min((float)size.Width / (float)scaleRange.Width, (float)size.Height / (float)scaleRange.Height) * 0.95f : 1;
+
+
+            ScaleAndPosition(g, size, scaleRange, zoom);
+            DrawJobProgress(g, spb, zoom, lastCommandNumber, queuedCommandNumber, processedCommandNumber);
+            //DrawJobRange(g, size, zoom);
+        }
+
+        private void DrawJobProgress(Graphics g, GrblCommand.StatePositionBuilder spb, float zoom, int lastCommandNumber, int queuedCommandNumber, int processedCommandNumber) {
+
+            //Random random = new Random(Guid.NewGuid().GetHashCode()); //Debug (used for random line color)
+             
+            foreach (GrblCommand cmd in list) {  //Maybe use GetRange rather interating over the whole list
+                try {
+
+                    cmd.BuildHelper();
+                    spb.AnalyzeCommand(cmd, false);
+                    
+                    if (!spb.TrueMovement() || !spb.LaserBurning) {
+
+                        continue;
+                    }
+
+                    if (cmd.CommandNumber == -1 || cmd.CommandNumber < lastCommandNumber) {
+
+                        continue;
+                    }
+
+                    if (cmd.CommandNumber > queuedCommandNumber) { //Qeueud should always be more then processed
+                        break;
+                    }
+
+                    Color linecolor = Color.FromArgb(spb.GetCurrentAlpha(mRange.SpindleRange), 0, 255, 0);
+                    if (cmd.CommandNumber > processedCommandNumber) {
+
+                        linecolor = Color.FromArgb(spb.GetCurrentAlpha(mRange.SpindleRange), 255, 255, 0);
+                    }
+
+                    //Debug (clearly indicate what is being redrawn)
+                    //linecolor = Color.FromArgb(spb.GetCurrentAlpha(mRange.SpindleRange), random.Next(0, 64)*4, random.Next(0, 64)*4, random.Next(0, 64)*4);
+
+                    using (Pen pen = GetPen(linecolor)) {
+                        
+                        pen.ScaleTransform(1 / zoom, 1 / zoom);
+
+                        if (spb.G0G1 && cmd.IsLinearMovement && pen.Color.A > 0) {
+                            g.DrawLine(pen, new PointF((float)spb.X.Previous, (float)spb.Y.Previous), new PointF((float)spb.X.Number, (float)spb.Y.Number));
+                        } else if (spb.G2G3 && cmd.IsArcMovement && pen.Color.A > 0) {
+                            GrblCommand.G2G3Helper ah = spb.GetArcHelper(cmd);
+
+                            if (ah.RectW > 0 && ah.RectH > 0) {
+                                try { g.DrawArc(pen, (float)ah.RectX, (float)ah.RectY, (float)ah.RectW, (float)ah.RectH, (float)(ah.StartAngle * 180 / Math.PI), (float)(ah.AngularWidth * 180 / Math.PI)); } catch { System.Diagnostics.Debug.WriteLine(String.Format("Ex drwing arc: W{0} H{1}", ah.RectW, ah.RectH)); }
+                            }
+                        }
+                    }
+                } catch (Exception ex) { throw ex; } finally { cmd.DeleteHelper(); }
+            }
+        }
+
+
+        internal void DrawOnGraphics(Graphics g, Size size)
 		{
 			if (!mRange.MovingRange.ValidRange) return;
 
@@ -881,10 +950,15 @@ namespace LaserGRBL
 			mRange.ResetRange();
 			mRange.UpdateXYRange("X0", "Y0", false);
 			mEstimatedTotalTime = TimeSpan.Zero;
-
+             
+            int commandNumber = 0;
 			foreach (GrblCommand cmd in list)
 			{
-				try
+
+                //Set the command number used to draw the engraving progress
+                cmd.CommandNumber = commandNumber++;
+
+                try
 				{
 					GrblConf conf = Settings.GetObject("Grbl Configuration", new GrblConf());
 					TimeSpan delay = spb.AnalyzeCommand(cmd, true, conf);
