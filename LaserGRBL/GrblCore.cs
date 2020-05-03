@@ -259,7 +259,10 @@ namespace LaserGRBL
 
 		public UsageStats.UsageCounters UsageCounters;
 
-		public GrblCore(System.Windows.Forms.Control syncroObject, PreviewForm cbform, JogForm jogform)
+        private int mLastQueuedGrblCommandNumber = -1;     //Last queued command number used to display the engraving progress
+        private int mLastProcessedGrblCommandNumber = -1;  //Last processed command number used to display the engraving progress
+
+        public GrblCore(System.Windows.Forms.Control syncroObject, PreviewForm cbform, JogForm jogform)
 		{
             if (Type != Firmware.Grbl) Logger.LogMessage("Program", "Load {0} core", Type);
 
@@ -459,7 +462,11 @@ namespace LaserGRBL
 
 			if (OnFileLoaded != null)
 				OnFileLoaded(elapsed, filename);
-		}
+
+            //Clear queued and processed command numbers used to display the engraving progress
+            mLastQueuedGrblCommandNumber = -1; 
+            mLastProcessedGrblCommandNumber = -1;
+        }
 
 		public GrblFile LoadedFile
 		{ get { return file; } }
@@ -1108,7 +1115,13 @@ namespace LaserGRBL
 		public int Executed
 		{ get { return mSent.Count; } }
 
-		public System.Collections.Generic.List<IGrblRow> SentCommand(int index, int count)
+        public int LastQueuedGrblCommandNumber  
+        { get { return mLastQueuedGrblCommandNumber; } } // Thread Safe ??
+
+        public int LastProcessedGrblCommandNumber  
+        { get { return mLastProcessedGrblCommandNumber; } } // Thread Safe ??
+
+        public System.Collections.Generic.List<IGrblRow> SentCommand(int index, int count)
 		{
 			index = Math.Min(index, mSent.Count - 1);       //force index to be in range
 			count = Math.Min(count, mSent.Count - index);   //force count to be in range
@@ -1411,7 +1424,10 @@ namespace LaserGRBL
 				try
 				{
 
-					tosend.BuildHelper();
+                    if (tosend.CommandNumber > -1) //Set the last queued command number
+                        mLastQueuedGrblCommandNumber = tosend.CommandNumber; // Thread Safe ??
+
+                    tosend.BuildHelper();
 
 					tosend.SetSending();
 					mSentPtr.Add(tosend);
@@ -1724,7 +1740,10 @@ namespace LaserGRBL
 					pending.SetResult(rline, SupportCSV);   //assegnare lo stato
 					mPending.Dequeue();                     //solo alla fine rimuoverlo dalla lista (per write config che si aspetta che lo stato sia noto non appena la coda si svuota)
 
-					mBuffer -= pending.SerialData.Length;
+                    if (pending.CommandNumber > -1) //Set the last processed command number
+                        mLastProcessedGrblCommandNumber = pending.CommandNumber;  // Thread Safe ??                  
+
+                    mBuffer -= pending.SerialData.Length;
 
 					if (mTP.InProgram && pending.RepeatCount == 0) //solo se non è una ripetizione aggiorna il tempo
 						mTP.JobExecuted(pending.TimeOffset);

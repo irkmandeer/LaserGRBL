@@ -19,8 +19,15 @@ namespace LaserGRBL
 	}
 
 	public partial class GrblCommand
-	{
-		public class StatePositionBuilder : StateBuilder
+	{        
+        private int mCommandNumber = -1; // The Command Number used to display the engraving progress
+
+        public int CommandNumber {
+            get { return this.mCommandNumber; }
+            set { this.mCommandNumber = value; }
+        }
+
+        public class StatePositionBuilder : StateBuilder
 		{
 			bool supportPWM = Settings.GetObject("Support Hardware PWM", true);
 
