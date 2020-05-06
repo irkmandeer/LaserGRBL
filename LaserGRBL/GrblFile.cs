@@ -13,6 +13,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using System.Linq;
+using LaserGRBL.UserControls;
 
 namespace LaserGRBL
 {
@@ -99,6 +100,10 @@ namespace LaserGRBL
 
         public void LoadImportedSVG(string filename, bool append)
         {
+            ProgressDialog.Text = "Importing SVG";
+            ProgressDialog.Maximum = 3;
+            ProgressDialog.Visible = true;
+            
             RiseOnFileLoading(filename);
 
             long start = Tools.HiResTimer.TotalMilliseconds;
@@ -107,6 +112,9 @@ namespace LaserGRBL
                 list.Clear();
 
             mRange.ResetRange();
+
+            ProgressDialog.Text = "Importing SVG - Generating G-Code";
+            ProgressDialog.Progress++;
 
             SvgConverter.GCodeFromSVG converter = new SvgConverter.GCodeFromSVG();
             converter.GCodeXYFeed = Settings.GetObject("GrayScaleConversion.VectorizeOptions.BorderSpeed", 1000);
@@ -124,10 +132,17 @@ namespace LaserGRBL
                 }
             }
 
+            ProgressDialog.Text = "Importing SVG - Analyzing";
+            ProgressDialog.Progress++;
+
             Analyze();
             long elapsed = Tools.HiResTimer.TotalMilliseconds - start;
 
+            ProgressDialog.Text = "Importing SVG - Completed";
+            ProgressDialog.Progress++;
             RiseOnFileLoaded(filename, elapsed);
+
+            ProgressDialog.Visible = false;
         }
 
 
