@@ -221,16 +221,20 @@ namespace LaserGRBL.UserControls
                         if (lastCommandNumber == -1) {
 
                             Core.LoadedFile.DrawOnGraphics(g, wSize);
-                        }
 
-                        //Draw Progress
-                        Core.LoadedFile.DrawProgressOnGraphics(g, wSize, lastCommandNumber, queuedCommandNumber, processedCommandNumber);
+                            //Draw preview from start next time
+                            lastProcessedCommandNumber = 0; //Not Thread Safe
+                        } else {
+
+                            //Draw Progress
+                            Core.LoadedFile.DrawProgressOnGraphics(g, wSize, lastCommandNumber, queuedCommandNumber, processedCommandNumber);
+
+                            // Set last processed command number
+                            lastProcessedCommandNumber = processedCommandNumber; //Not Thread Safe
+                        }
                     }
                     mLastMatrix = g.Transform;
                 }
-
-                // Set last processed command number
-                lastProcessedCommandNumber = processedCommandNumber; //Not Thread Safe
              
                 AssignBMP(bmp);
 			}
