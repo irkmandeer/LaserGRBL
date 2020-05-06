@@ -101,7 +101,7 @@ namespace LaserGRBL
         public void LoadImportedSVG(string filename, bool append)
         {
             ProgressDialog.Text = "Importing SVG";
-            ProgressDialog.Maximum = 3;
+            ProgressDialog.Maximum = 4;
             ProgressDialog.Visible = true;
             
             RiseOnFileLoading(filename);
@@ -132,6 +132,12 @@ namespace LaserGRBL
                 }
             }
 
+            ProgressDialog.Text = "Optimizing";
+            ProgressDialog.Progress++;
+
+            SvgConverter.GCodeOptimizer.PerformGridBasedNearestNeighboutOptimization(list);
+            //SvgConverter.GCodeOptimizer.PerformGreedyNearestNeighboutOptimization(list);
+           
             ProgressDialog.Text = "Importing SVG - Analyzing";
             ProgressDialog.Progress++;
 
