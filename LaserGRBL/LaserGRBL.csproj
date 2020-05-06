@@ -145,6 +145,7 @@
     </Compile>
     <Compile Include="SvgConverter\GCodeFromSVG.cs" />
     <Compile Include="SvgConverter\gcodeRelated.cs" />
+    <Compile Include="SvgConverter\GCodeOptimizer.cs" />
     <Compile Include="SvgConverter\SvgModeForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -709,6 +710,7 @@
     <Compile Include="UserControls\PlaceholderTextbox.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="UserControls\ProgressDialog.cs" />
     <Compile Include="UserControls\WaitingProgressBar.cs">
       <SubType>UserControl</SubType>
     </Compile>
