@@ -9,6 +9,8 @@ The link to the official LaserGRBL can be found below.
 
 ### History
 - 2020-05-03: [Added Engraving Progress to the Job Preview](https://github.com/urkmandeer/LaserGRBL/commit/8be50889bfb8ecf805eda2c35ce48ff0bbf7ce80)
+- 2020-05-06: [Added a Progress Dialog](https://github.com/urkmandeer/LaserGRBL/commit/d261baaa9228080d996af2e854ee7418e9b24df9)
+- 2020-05-06: [Added Nearest Neighbour GCode Optimization for SVG files](https://github.com/urkmandeer/LaserGRBL/commit/3e070a0ab9183febb6b6571b2b9201a918fc6970)
 
 
 -------------------------------------------------------------------
