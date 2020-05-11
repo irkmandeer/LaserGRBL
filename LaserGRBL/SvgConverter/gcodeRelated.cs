@@ -143,13 +143,13 @@ namespace LaserGRBL.SvgConverter
 		{
 			if (cmt.Length > 0) cmt = string.Format("({0})", cmt);
 			gcodeString.AppendFormat("{0} S{1} {2}\r\n", gcodeSpindleCmdOn, gcodeSpindleSpeed, cmt);
-		}
+        }
 
 		public static void SpindleOff(StringBuilder gcodeString, string cmt = "")
 		{
 			if (cmt.Length > 0) cmt = string.Format("({0})", cmt);
-			gcodeString.AppendFormat("{0} {1}\r\n", gcodeSpindleCmdOff, cmt);
-		}
+            gcodeString.AppendFormat("{0} {1}\r\n", gcodeSpindleCmdOff, cmt);
+        }
 
 		public static void PenDown(StringBuilder gcodeString, string cmto = "")
 		{

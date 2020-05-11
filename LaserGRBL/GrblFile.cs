@@ -101,7 +101,7 @@ namespace LaserGRBL
         public void LoadImportedSVG(string filename, bool append)
         {
             ProgressDialog.Text = "Importing SVG";
-            ProgressDialog.Maximum = 4;
+            ProgressDialog.Maximum = 3;
             ProgressDialog.Visible = true;
             
             RiseOnFileLoading(filename);
@@ -131,13 +131,7 @@ namespace LaserGRBL
                         list.Add(cmd);
                 }
             }
-
-            ProgressDialog.Text = "Optimizing";
-            ProgressDialog.Progress++;
-
-            SvgConverter.GCodeOptimizer.PerformGridBasedNearestNeighboutOptimization(list);
-            //SvgConverter.GCodeOptimizer.PerformGreedyNearestNeighboutOptimization(list);
-           
+              
             ProgressDialog.Text = "Importing SVG - Analyzing";
             ProgressDialog.Progress++;
 
@@ -964,11 +958,51 @@ namespace LaserGRBL
 
 		}
 
-		private void Analyze() //analyze the file and build global range and timing for each command
-		{
-			GrblCommand.StatePositionBuilder spb = new GrblCommand.StatePositionBuilder();
+        public void Optimize(string filename) {
 
-			mRange.ResetRange();
+            if (list.Count > 0) {
+
+                ProgressDialog.Text = "Optimizing";
+                ProgressDialog.Maximum = 5;
+                ProgressDialog.Visible = true;
+
+                RiseOnFileLoading(filename);
+
+                long start = Tools.HiResTimer.TotalMilliseconds;
+
+                ProgressDialog.Text = "Optimizing - Adding M Codes";
+                ProgressDialog.Progress++;
+                SvgConverter.GCodeOptimizer.AddImplicitMCodes(list);
+
+                ProgressDialog.Text = "Optimizing";
+                ProgressDialog.Progress++;
+                SvgConverter.GCodeOptimizer.PerformGridBasedNearestNeighboutOptimization(list);
+
+                ProgressDialog.Text = "Optimizing - Adding Z Moves";
+                ProgressDialog.Progress++;
+                SvgConverter.GCodeOptimizer.AddMCodeZMoves(list);
+
+                ProgressDialog.Text = "Optimizing - Analyzing";
+                ProgressDialog.Progress++;
+                Analyze();
+
+                ProgressDialog.Text = "Optimizing - Completed";
+                ProgressDialog.Progress++;
+
+                long elapsed = Tools.HiResTimer.TotalMilliseconds - start;
+                RiseOnFileLoaded(filename, elapsed);
+
+                ProgressDialog.Visible = false;
+            }
+        }
+
+
+        private void Analyze() //analyze the file and build global range and timing for each command
+		{
+
+            GrblCommand.StatePositionBuilder spb = new GrblCommand.StatePositionBuilder();
+
+            mRange.ResetRange();
 			mRange.UpdateXYRange("X0", "Y0", false);
 			mEstimatedTotalTime = TimeSpan.Zero;
              
@@ -992,7 +1026,8 @@ namespace LaserGRBL
 				catch (Exception ex) { throw ex; }
 				finally { cmd.DeleteHelper(); }
 			}
-		}
+             
+        }
 
 		private void ScaleAndPosition(Graphics g, Size s, ProgramRange.XYRange scaleRange, float zoom)
 		{

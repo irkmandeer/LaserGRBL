@@ -477,7 +477,20 @@ namespace LaserGRBL
 				OpenFile(parent, Settings.GetObject<string>("Core.LastOpenFile", null));
 		}
 
-		public static readonly System.Collections.Generic.List<string> ImageExtensions = new System.Collections.Generic.List<string>(new string[] { ".jpg", ".bmp", ".png", ".gif" });
+        public void Optimize() {
+
+            if (CanLoadNewFile) {
+
+                string lastFN = Settings.GetObject<string>("Core.LastOpenFile", null);
+                if (lastFN != null && System.IO.File.Exists(lastFN)) {
+
+                    file.Optimize(lastFN);
+                }
+            }
+        }
+
+
+        public static readonly System.Collections.Generic.List<string> ImageExtensions = new System.Collections.Generic.List<string>(new string[] { ".jpg", ".bmp", ".png", ".gif" });
 		public static readonly System.Collections.Generic.List<string> GCodeExtensions = new System.Collections.Generic.List<string>(new string[] { ".nc", ".cnc", ".tap", ".gcode", ".ngc" });
 		public void OpenFile(System.Windows.Forms.Form parent, string filename = null, bool append = false)
 		{

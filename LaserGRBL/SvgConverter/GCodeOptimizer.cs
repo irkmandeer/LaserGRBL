@@ -61,11 +61,77 @@ namespace LaserGRBL.SvgConverter {
                 }
             }
         }
-        
+
         // Distance Function (without the Sqrt)
         private static double DistanceSqr(Point p1, Point p2) {
 
             return Math.Pow(p2.X - p1.X, 2) + Math.Pow(p2.Y - p1.Y, 2);
+        }
+
+        public static void AddImplicitMCodes(List<GrblCommand> commands) {
+
+            var list = new List<GrblCommand>();
+            var spb = new GrblCommand.StatePositionBuilder();
+
+            float S = 0;
+            foreach (GrblCommand cmd in commands) {
+
+                cmd.BuildHelper();
+                spb.AnalyzeCommand(cmd, false);
+
+                float lastS = S;
+                if (cmd.S != null) {
+
+                    S = (float)cmd.S.Number;
+                }
+
+                if (cmd.M == null) {
+
+                    if (lastS != S) {
+
+                        list.Add(new GrblCommand(spb.LaserBurning ? "M3 S" + S.ToString() : "M5"));
+                    }
+                }
+                list.Add(cmd);
+            }
+
+            commands.Clear();
+            foreach (GrblCommand cmd in list) {
+
+                commands.Add(cmd);
+            }
+        }
+
+        public static void AddMCodeZMoves(List<GrblCommand> commands) {
+            
+            var spb = new GrblCommand.StatePositionBuilder();
+            var list = new List<GrblCommand>();
+            foreach (GrblCommand cmd in commands) {
+
+                cmd.BuildHelper();
+                spb.AnalyzeCommand(cmd, false);
+
+                list.Add(cmd);
+
+                if (cmd.M != null) {
+
+                    switch ((int)cmd.M.Number) {
+
+                        case 3:
+                            list.Add(new GrblCommand("G0 Z0"));
+                            break;
+                        case 5:
+                            list.Add(new GrblCommand("G0 Z1"));
+                            break;                        
+                    }                    
+                }
+            }
+
+            commands.Clear();
+            foreach (GrblCommand cmd in list) {
+
+                commands.Add(cmd);
+            }
         }
 
         // Group GrblCommands into groups (paths) where the laser is burning
@@ -95,10 +161,10 @@ namespace LaserGRBL.SvgConverter {
 
             return groups;
         }
-         
+
         //Perform Grid Based Nearest Neighbout Optimization
         public static void PerformGridBasedNearestNeighboutOptimization(List<GrblCommand> commands) {
-        
+
             //Performance Timer
             var timer = System.Diagnostics.Stopwatch.StartNew();
 
@@ -115,7 +181,7 @@ namespace LaserGRBL.SvgConverter {
 
                 grid.Add(group);
             }
-             
+
             //Optimize
             ProgressDialog.Text = "Optimizing - Grid Based Nearest Neigbour";
 
@@ -123,7 +189,7 @@ namespace LaserGRBL.SvgConverter {
             Point current = new Point();
             int hits = 0, misses = 0;
             while (grid.Count > 0) {
-                 
+
                 GrblCommandGroup best = null;
                 double bestDistance = 0;
 
@@ -194,7 +260,7 @@ namespace LaserGRBL.SvgConverter {
             //Done
             timer.Stop();
             ProgressDialog.Text = "Optimizing - Elapsed: " + timer.ElapsedMilliseconds.ToString() + "ms";
-            Console.WriteLine("GCode Optimization Completed. Grid Hits:" + hits.ToString() + " Misses: " + misses.ToString() + " Elapsed: " + timer.ElapsedMilliseconds.ToString() + "ms");                
+            Console.WriteLine("GCode Optimization Completed. Grid Hits:" + hits.ToString() + " Misses: " + misses.ToString() + " Elapsed: " + timer.ElapsedMilliseconds.ToString() + "ms");
         }
 
         //Perform Greedy Nearest Neighbout Optimization
@@ -213,7 +279,7 @@ namespace LaserGRBL.SvgConverter {
 
             commands.Clear();
             Point current = new Point();
-            while (groups.Count > 0) { 
+            while (groups.Count > 0) {
 
                 // Iterate over all groups (paths) and find the closest to the current position
                 GrblCommandGroup best = null;
@@ -228,7 +294,7 @@ namespace LaserGRBL.SvgConverter {
                         bestDistance = distance;
                     }
                 }
-              
+
                 // Remember last position
                 current = new Point(best.End.X, best.End.Y);
 
@@ -254,7 +320,7 @@ namespace LaserGRBL.SvgConverter {
             ProgressDialog.Text = "Optimizing - Elapsed: " + timer.ElapsedMilliseconds.ToString() + "ms";
             Console.WriteLine("GCode Optimization Completed. Elapsed: " + timer.ElapsedMilliseconds.ToString() + "ms");
         }
-         
+
     }
 
 
