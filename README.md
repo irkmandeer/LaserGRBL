@@ -12,6 +12,7 @@ The link to the official LaserGRBL can be found below.
 - 2020-05-06: [Added a Progress Dialog](https://github.com/urkmandeer/LaserGRBL/commit/ba728963db221dadd3a91514c74443934652ea17)
 - 2020-05-06: [Added Nearest Neighbour GCode Optimization for SVG files](https://github.com/urkmandeer/LaserGRBL/commit/3e070a0ab9183febb6b6571b2b9201a918fc6970)
 - 2020-05-07: [Added CoreXY Laser and Servo Firmware](https://github.com/irkmandeer/LaserGRBL/commit/f11100a94757e9daf7e009ab9b77c778b0fe2fe8)
+- 2020-05-11 [Added Optimize Menu Item, optimization fixes, and Z axis movement](https://github.com/irkmandeer/LaserGRBL/commit/d4dd2724ad20c4f77b4669bca3ad12f4ebccc889)
 
 
 -------------------------------------------------------------------
