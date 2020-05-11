@@ -148,10 +148,10 @@ namespace LaserGRBL.SvgConverter {
                 Point pos = new Point((float)spb.X.Number, (float)spb.Y.Number);
 
                 group.Add(pos, cmd);
-                if (!spb.LaserBurning) {
+                if (cmd.M != null && (int) cmd.M.Number == 5) {
 
-                    groups.Add(group);
-                    group = new GrblCommandGroup();
+                         groups.Add(group);
+                         group = new GrblCommandGroup();
                 }
             }
 

@@ -977,6 +977,7 @@ namespace LaserGRBL
                 ProgressDialog.Text = "Optimizing";
                 ProgressDialog.Progress++;
                 SvgConverter.GCodeOptimizer.PerformGridBasedNearestNeighboutOptimization(list);
+                //SvgConverter.GCodeOptimizer.PerformGreedyNearestNeighboutOptimization(list);
 
                 ProgressDialog.Text = "Optimizing - Adding Z Moves";
                 ProgressDialog.Progress++;
