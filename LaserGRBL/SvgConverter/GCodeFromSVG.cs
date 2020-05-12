@@ -77,8 +77,8 @@ namespace LaserGRBL.SvgConverter
 			// From xml spec valid chars: 
 			// #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF] 
 			// any Unicode character, excluding the surrogate blocks, FFFE, and FFFF. 
-			text = RemoveInvalidUnicode.Replace(text, string.Empty);
-			svgCode = XElement.Parse(text, LoadOptions.None);
+            text = RemoveInvalidUnicode.Replace(text, string.Empty).Replace("inkscape:", "inkscape-");
+            svgCode = XElement.Parse(text, LoadOptions.None);
 
 			return convertSVG(svgCode);
 		}
@@ -265,10 +265,28 @@ namespace LaserGRBL.SvgConverter
 				if (svgComments)
 					if (groupElement.Attribute("id") != null)
 						gcodeString.Append("\r\n( Group level:" + level.ToString() + " id=" + groupElement.Attribute("id").Value + " )\r\n");
-				parseTransform(groupElement, true, level);   // transform will be applied in gcodeMove
-				if (!svgNodesOnly)
+
+                /* Inkscape */
+                string inkscape_label = groupElement.Attribute("inkscape-label") != null ? groupElement.Attribute("inkscape-label").Value.Replace("\"", "") : "";
+                string inkscape_groupmode = groupElement.Attribute("inkscape-groupmode") != null ? groupElement.Attribute("inkscape-groupmode").Value.Replace("\"", "") : "";
+                string inkscape_id = groupElement.Attribute("id") != null ? groupElement.Attribute("id").Value.Replace("\"", "") : "";
+                string inkscape_style = groupElement.Attribute("style") != null ? groupElement.Attribute("style").Value.Replace("\"", "") : "";
+
+                if (inkscape_groupmode == "layer" || inkscape_label.StartsWith("layer")) {
+
+                    gcodeString.Append("\r\n( Inkscape Layer Group. id=\"" + inkscape_id + "\" label=\"" + inkscape_label + "\" mode=\"" + inkscape_groupmode + "\" )\r\n");
+                }
+
+                if (inkscape_style.Contains("display:none")) {
+
+                    continue; //Is this safe?
+                }
+
+                parseTransform(groupElement, true, level);   // transform will be applied in gcodeMove     
+                if (!svgNodesOnly)
 					parseBasicElements(groupElement, level);
-				parsePath(groupElement, level);
+             
+                parsePath(groupElement, level);
 				parseGroup(groupElement, level + 1);
 			}
 			return;
