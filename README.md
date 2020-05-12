@@ -14,6 +14,7 @@ The link to the official LaserGRBL can be found below.
 - 2020-05-07: [Added CoreXY Laser and Servo Firmware](https://github.com/irkmandeer/LaserGRBL/commit/f11100a94757e9daf7e009ab9b77c778b0fe2fe8)
 - 2020-05-11 [Added Optimize Menu Item, optimization fixes, and Z axis movement](https://github.com/irkmandeer/LaserGRBL/commit/d4dd2724ad20c4f77b4669bca3ad12f4ebccc889)
 - 2020-05-11 [Fixed GCode Optimization deleting arcs](https://github.com/irkmandeer/LaserGRBL/commit/29b1ca080e04f05b669fed89c591f9f72cc834ae)
+- 2020-05-12 [Position Laser by Double-Clicking](https://github.com/irkmandeer/LaserGRBL/commit/c1bbc93fc8862421a3a9a624385c44ab699a9663)
 
 -------------------------------------------------------------------
 
