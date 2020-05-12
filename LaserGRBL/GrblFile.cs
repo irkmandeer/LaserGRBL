@@ -17,7 +17,15 @@ using LaserGRBL.UserControls;
 
 namespace LaserGRBL
 {
-	public class GrblFile : IEnumerable<GrblCommand>
+
+    public static class R {
+
+        public static System.Drawing.Size Size;
+        public static float Zoom = 0;
+        public static ProgramRange.XYRange MovingRange = null;
+    }
+
+    public class GrblFile : IEnumerable<GrblCommand>
 	{
 		public enum CartesianQuadrant { I, II, III, IV, Mix, Unknown }
 
@@ -784,6 +792,8 @@ namespace LaserGRBL
             GrblCommand.StatePositionBuilder spb = new GrblCommand.StatePositionBuilder();
             ProgramRange.XYRange scaleRange = mRange.MovingRange;
 
+            
+
             //Get scale factors for both directions. To preserve the aspect ratio, use the smaller scale factor.
             float zoom = scaleRange.Width > 0 && scaleRange.Height > 0 ? Math.Min((float)size.Width / (float)scaleRange.Width, (float)size.Height / (float)scaleRange.Height) * 0.95f : 1;
 
@@ -855,8 +865,11 @@ namespace LaserGRBL
 			//Get scale factors for both directions. To preserve the aspect ratio, use the smaller scale factor.
 			float zoom = scaleRange.Width > 0 && scaleRange.Height > 0 ? Math.Min((float)size.Width / (float)scaleRange.Width, (float)size.Height / (float)scaleRange.Height) * 0.95f : 1;
 
+            R.Size = size;
+            R.Zoom = zoom;
+            R.MovingRange = mRange.MovingRange;
 
-			ScaleAndPosition(g, size, scaleRange, zoom);
+            ScaleAndPosition(g, size, scaleRange, zoom);
 			DrawJobPreview(g, spb, zoom);
 			DrawJobRange(g, size, zoom);
 

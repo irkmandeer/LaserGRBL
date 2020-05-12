@@ -292,5 +292,25 @@ namespace LaserGRBL.UserControls
 		{
 			RecreateBMP(true);
 		}
-	}
+
+        private void GrblPanel_MouseDoubleClick(object sender, MouseEventArgs e) {
+
+            float margin = 10; //Hardcoded in ScaleAndPosition.ScaleAndPosition()
+            if (Core != null && Core.CanSendFile && Core.CanLoadNewFile && R.MovingRange != null && R.MovingRange.ValidRange && R.Zoom != 0) {
+
+                //Moving Range does not handle arcs correctly
+                //float targetX = Math.Max(0, Math.Min(((e.X - 10) / R.Zoom), (float)R.MovingRange.Width)); 
+                //float targetY = Math.Max(0, Math.Min(((R.Size.Height - e.Y - 10) / R.Zoom), (float)R.MovingRange.Height));
+
+                float targetX = Math.Max(0, ((e.X - margin) / R.Zoom));
+                float targetY = Math.Max(0, ((R.Size.Height - e.Y - margin) / R.Zoom));
+
+
+                //MessageBox.Show("G0 X" + targetX + " Y" + targetY);
+                Core.EnqueueCommand(new GrblCommand("G0 X" + targetX + " Y" + targetY));
+            }
+ 
+
+        }
+    }
 }
