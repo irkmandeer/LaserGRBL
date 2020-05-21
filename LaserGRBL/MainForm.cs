@@ -740,14 +740,14 @@ namespace LaserGRBL
 			GitHub.CheckVersion(true);
 		}
 
-        private void optimizeToolStripMenuItem_Click(object sender, EventArgs e) {
+		private void MnMaterialDB_Click(object sender, EventArgs e)
+		{
+			PSHelper.PSEditorForm.CreateAndShowDialog();
+		}
+	}
 
-            Core.Optimize();
-        }
-    }
 
-
-    public class MMnRenderer : ToolStripProfessionalRenderer
+	public class MMnRenderer : ToolStripProfessionalRenderer
 	{
 		public MMnRenderer() : base(new CustomMenuColor()) { }
 
