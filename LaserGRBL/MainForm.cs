@@ -744,10 +744,15 @@ namespace LaserGRBL
 		{
 			PSHelper.PSEditorForm.CreateAndShowDialog();
 		}
-	}
+
+        private void optimizeToolStripMenuItem_Click(object sender, EventArgs e) {
+
+            Core.Optimize();
+        }
+    }
 
 
-	public class MMnRenderer : ToolStripProfessionalRenderer
+    public class MMnRenderer : ToolStripProfessionalRenderer
 	{
 		public MMnRenderer() : base(new CustomMenuColor()) { }
 
