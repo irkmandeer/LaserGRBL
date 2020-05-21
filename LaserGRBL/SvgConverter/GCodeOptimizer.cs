@@ -68,6 +68,116 @@ namespace LaserGRBL.SvgConverter {
             return Math.Pow(p2.X - p1.X, 2) + Math.Pow(p2.Y - p1.Y, 2);
         }
 
+        private class GrblCommandState : GrblCommand {
+
+            public float cM = 0;
+            public float cS = 0;
+            public float cG = 0;
+            public float cF = 0;
+            public Point start;
+            public Point end;
+
+            public GrblCommandState(string line) : base(line) {
+            }
+        }
+
+        public static void RemoveMCodes(List<GrblCommand> commands) {
+
+
+            var list = new List<GrblCommand>();
+            var list2 = new List<GrblCommandState>();
+            var spb = new GrblCommand.StatePositionBuilder();
+
+            float S = 0;
+            float G = 0;
+            float M = 5;
+            foreach (GrblCommand cmd in commands) {
+
+
+
+                cmd.BuildHelper();
+                spb.AnalyzeCommand(cmd, false);
+
+                float lastS = S;
+                if (cmd.S != null) {
+
+                    S = (float)cmd.S.Number;
+                }
+
+                if (cmd.G != null) {
+
+                    G = (float)cmd.G.Number;
+                }
+
+
+                float lastM = M;
+                if (cmd.M != null && ((int)cmd.M.Number == 3 || (int)cmd.M.Number == 5)) {
+
+                    M = (int)cmd.M.Number;
+                    //list.Add(new GrblCommand(M == 3 ? "M3 S" + S : "M5"));
+                }
+
+ 
+
+
+                if (cmd.IsMovement) {
+
+                    GrblCommandState cmd2 = new GrblCommandState(cmd.Command);
+                    cmd2.start = new Point((float)spb.X.Previous, (float)spb.Y.Previous);
+                    cmd2.cM = M;
+                    cmd2.cS = S;
+                    cmd2.cG = G;
+                    cmd2.cF = (float) spb.F.Number;
+
+
+                    list2.Add(cmd2);
+
+                //    if (M != lastM || S != lastS) {
+                //     list.Add(new GrblCommand(M == 3 ? "M3 S" + S : "M5"));
+                //  }
+
+
+                    //list.Add(new GrblCommand(cmd.Command));
+
+                }
+
+            }
+
+            commands.Clear();
+
+            S = 0;
+            M = 5;
+
+            list2.Reverse();
+            foreach (GrblCommandState cmd in list2) {
+
+                if (cmd.cS != S) {
+
+                    S = cmd.cS;
+
+                }
+
+                if (cmd.cM != M) {
+
+                    M = cmd.cM;
+                    commands.Add(new GrblCommand(M == 3 ? "M3 S" + S : "M5"));
+                }
+
+                commands.Add(new GrblCommand("G" + cmd.cG + " X" + cmd.start.X + " Y" + cmd.start.Y + " F" + cmd.cF));
+
+                //commands.Add(cmd);
+
+            }
+
+
+
+            //        commands.Clear();
+            //          foreach (GrblCommand cmd in list) {
+            //
+            //    commands.Add(cmd);
+            //}
+        }
+
         public static void AddImplicitMCodes(List<GrblCommand> commands) {
 
             var list = new List<GrblCommand>();
